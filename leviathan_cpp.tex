@@ -1,0 +1,191 @@
+%%%% Proceedings format for most of ACM conferences (with the exceptions listed below) and all ICPS volumes.
+
+\documentclass[sigplan,10pt, review]{acmart}\settopmatter{printfolios=true,printccs=false,printacmref=false}
+
+%\documentclass[sigconf]{acmart}
+
+\usepackage{booktabs} % For formal tables
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{stmaryrd}
+\usepackage{mathtools}
+\usepackage[ruled]{algorithm2e} % For algorithms
+\usepackage{listings}
+\usepackage{subfig}
+
+\newcommand{\todo}{\textcolor{red}{\textbf{TODO}}}
+\newcommand{\var}[1]{\mathit{#1}}
+\newcommand{\bv}[1]{#1~\mathit{word}}
+\newcommand{\bitmoded}[2]{{\underbracket[1pt][1pt]{#2}_{#1}}}
+\newcommand{\bitmodeu}[2]{{\overbracket[1pt][1pt]{#2}^{#1}}}
+\newcommand{\testbit}{~!!~}
+\newcommand{\nocompile}[1]{}
+\newcommand{\CC}{C\nolinebreak\hspace{-.05em}\raisebox{.4ex}{\small +}\nolinebreak\hspace{-.10em}\raisebox{.4ex}{\small +}}
+
+\DeclareMathOperator{\ucast}{zxtend}
+\DeclareMathOperator{\sint}{sint}
+\DeclareMathOperator{\msb}{msb}
+\DeclareMathOperator{\sextend}{sxtend}
+\DeclareMathOperator{\zextend}{zxtend}
+\DeclareMathOperator{\rev}{rev}
+\DeclareMathOperator{\bytesof}{bytes\_of}
+\DeclareMathOperator{\parity}{parity}
+\DeclareMathOperator{\fold}{fold}
+\DeclareMathOperator{\sign}{sign}
+\DeclareMathOperator{\isNaN}{isNaN}
+
+\renewcommand{\algorithmcfname}{ALGORITHM}
+\SetAlFnt{\small}
+\SetAlCapFnt{\small}
+\SetAlCapNameFnt{\small}
+\SetAlCapHSkip{0pt}
+\IncMargin{-\parindent}
+
+\lstdefinestyle{customc}{
+  language=C,
+  basicstyle=\small
+}
+
+\lstdefinelanguage
+   [x64]{Assembler}     % add a "x64" dialect of Assembler
+   [x86masm]{Assembler} % based on the "x86masm" dialect
+   % with these extra keywords:
+   {morekeywords={CDQE,CQO,CMPSQ,CMPXCHG16B,JRCXZ,LODSQ,MOVSXD, %
+                  POPFQ,PUSHFQ,SCASQ,STOSQ,IRETQ,RDTSCP,SWAPGS, %
+                  rax,rdx,rcx,rbx,rsi,rdi,rsp,rbp, %
+                  r8,r8d,r8w,r8b,r9,r9d,r9w,r9b, %
+                  r10,r10d,r10w,r10b,r11,r11d,r11w,r11b, %
+                  r12,r12d,r12w,r12b,r13,r13d,r13w,r13b, %
+                  r14,r14d,r14w,r14b,r15,r15d,r15w,r15b}} % etc.
+
+\lstdefinestyle{customasm}{
+  belowcaptionskip=1\baselineskip,
+  language=[x64]Assembler,
+  basicstyle=\ttfamily,
+	keywordstyle=\ttfamily,
+  commentstyle=\itshape,
+}
+
+\lstset{escapeinside={(*@}{@*)},language=[x64]Assembler,style=customasm,morecomment=[l][\itshape]{\#}}
+
+
+% Copyright
+ \setcopyright{none}
+%\setcopyright{acmcopyright}
+%\setcopyright{acmlicensed}
+%\setcopyright{rightsretained}
+%\setcopyright{usgov}
+%\setcopyright{usgovmixed}
+%\setcopyright{cagov}
+%\setcopyright{cagovmixed}
+
+% DOI
+\acmDOI{}
+\acmISBN{}
+
+%Conference
+\acmConference[CPP'19]{ACM SIGPLAN International Conference on Certified Programs and Proofs}{January 2019}{Lisbon, Portugal}
+\acmYear{2019}
+\startPage{1}
+
+\begin{document}
+% Title portion. Note the short title for running heads
+\title{Formally Verified Big Step Semantics out of x86-64 Binaries}
+
+\author{Ian Roessle}
+%\orcid{1234-5678-9012-3456}
+\affiliation{%
+  \institution{Virginia Polytechnic Institute and State University}
+  \streetaddress{}
+  \city{}
+  \state{}
+  \postcode{}
+  \country{}
+}
+\email{iroessle@vt.edu}
+\author{Freek Verbeek}
+\affiliation{%
+  \institution{Virginia Polytechnic Institute and State University}
+  \streetaddress{}
+  \city{}
+  \state{}
+  \postcode{}
+  \country{}
+}
+\email{freek@vt.edu}
+\author{Binoy Ravindran}
+\affiliation{%
+  \institution{Virginia Polytechnic Institute and State University}
+  \streetaddress{}
+  \city{}
+  \state{}
+  \postcode{}
+  \country{}
+}
+\email{binoy@vt.edu}
+
+
+\begin{abstract}
+This paper presents a methodology for generating formally proven equivalence theorems between decompiled x86-64 machine code and big step semantics. 
+These proofs are built on top of two additional contributions. 
+First, a robust and tested formal x86-64 machine model containing small step semantics for 1625 instructions.
+Second, a decompilation-into-logic methodology supporting both x86-64 assembly and machine code at large scale.
+This work enables black-box binary verification, i.e., formal verification of a binary where source code is unavailable.
+As such, it can be applied to safety-critical systems that consist of legacy components, or components whose source code is unavailable due to proprietary reasons.
+The methodology minimizes the trusted code base by leveraging machine-learned semantics to build a formal machine model.
+We apply the methodology to several case studies, including binaries that heavily rely on the SSE2 floating-point instruction set, and binaries that are obtained by compiling code that is obtained by inlining assembly into C code.
+%Between the optimization of compiliers and a lack of formal instruction semantics, lifting x86-64 binaries and formaly verifying them to a specification has been fraught with difficulty. As such, most formal verification methodologies often operate at a higher level of abstraction to the binary and rely on trusted compilers. Operating systems often however leverage custom assembly or a hybrid of C++ and Assembly in order for performance, which would would not work with former approaches. Leviathan's main contribution is a step toward enabling verification at the binary level -- namely that of lifting an x86-64 binary up to big step semantics for formal verification at a more abstrat level of representation.
+\end{abstract}
+
+
+
+%
+% The code below should be generated by the tool at
+% http://dl.acm.org/ccs.cfm
+% Please copy and paste the code instead of the example below.
+%
+\begin{CCSXML}
+
+<concept>
+<concept_id>10003752.10003790.10003798</concept_id>
+ <concept_desc>Theory of computation~Equational logic and rewriting</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+
+<concept>
+<concept_id>10003752.10003790.10011119</concept_id>
+ <concept_desc>Theory of computation~Abstraction</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+</ccs2012>
+
+
+\end{CCSXML}
+
+ \ccsdesc[500]{Theory of computation~Equational logic and rewriting}
+ \ccsdesc[500]{Theory of computation~Abstraction}
+
+ %
+% End generated code
+%
+
+
+\keywords{x86-64,
+semantics, theorem proving}
+
+
+\maketitle
+
+
+% The default list of authors is too long for headers.
+\renewcommand{\shortauthors}{I. Roessle et al.}
+
+
+%\input{samplebody-conf}
+\input{Leviathan_Body}
+
+\bibliographystyle{ACM-Reference-Format}
+%\bibliographystyle{ACM-Reference-Format}
+%\bibliography{sample-bibliography}
+
+\end{document}
